@@ -223,3 +223,79 @@ git remote add origin git@github.com:CarterYin/Ubuntu_Windows.git
 > **注意：** 我将您尝试添加的远程仓库名改为了 **`origin`**，这是 Git 中约定俗成的默认主远程仓库名。如果您想使用其他名称，请替换 `origin`。
 
 -----
+
+
+## 代理配置
+配置 Linux 系统的代理有几种常见的方法，具体取决于您想设置的代理类型和作用范围。
+
+### 1\. 临时环境变量代理（仅对当前 Shell 会话有效）
+
+这种方式最简单，通常用于临时的网络请求，如 `wget`、`curl` 或 `apt` 等命令行工具。
+
+  * **HTTP 代理：**
+    ```bash
+    export http_proxy="http://用户名:密码@代理服务器地址:端口"
+    # 如果没有用户名和密码
+    export http_proxy="http://代理服务器地址:端口"
+    ```
+  * **HTTPS 代理：**
+    ```bash
+    export https_proxy="http://用户名:密码@代理服务器地址:端口"
+    # 注意：HTTPS 代理通常也使用 http:// 开头的 URL 格式，除非代理本身是 SOCKS/HTTPS 代理。
+    ```
+  * **FTP 代理：**
+    ```bash
+    export ftp_proxy="http://代理服务器地址:端口"
+    ```
+  * **不使用代理的地址（可选）：**
+    ```bash
+    export no_proxy="localhost,127.0.0.1,.example.com"
+    ```
+
+**提示：** 记住所有变量名（如 `http_proxy`）应使用**小写**，同时为了兼容性，建议也设置**大写**版本（`HTTP_PROXY`）。
+
+### 2\. 永久环境变量代理（系统级或用户级）
+
+若要永久生效，可以将上述 `export` 命令添加到配置文件中：
+
+  * **用户级（仅对当前用户有效）：**
+
+      * 添加到 `~/.bashrc` 或 `~/.zshrc` 文件末尾。
+      * 例如：
+        ```bash
+        # 在文件末尾添加以下内容
+        export http_proxy="http://192.168.1.100:8080"
+        export https_proxy="$http_proxy"
+        export no_proxy="localhost,127.0.0.1"
+        ```
+      * 保存后，运行 `source ~/.bashrc` 或重新登录使其生效。
+
+  * **系统级（对所有用户有效）：**
+
+      * 在 `/etc/profile.d/` 目录下创建一个新的 `.sh` 脚本文件，例如 `/etc/profile.d/proxy.sh`，并将上述 `export` 命令写入其中。
+      * 给脚本添加执行权限：`sudo chmod +x /etc/profile.d/proxy.sh`。
+      * 重新登录或重启系统使其生效。
+
+### 3\. 配置 APT 包管理器的代理（针对 Debian/Ubuntu 等）
+
+对于 `apt` 或 `apt-get` 下载包时需要使用代理，可以单独配置：
+
+  * 编辑或创建文件 `/etc/apt/apt.conf.d/proxy.conf`（如果不存在）。
+  * 添加以下行：
+    ```
+    Acquire::http::Proxy "http://用户名:密码@代理服务器地址:端口/";
+    Acquire::https::Proxy "http://用户名:密码@代理服务器地址:端口/";
+    ```
+
+### 4\. 桌面环境网络设置代理（适用于 GUI 环境）
+
+如果您使用带有图形界面的 Linux 发行版（如 Ubuntu、Fedora、Mint），可以通过系统设置来配置代理：
+
+  * **Ubuntu (GNOME):** 通常在 **设置 (Settings) -\> 网络 (Network) -\> 网络代理 (Network Proxy)** 中进行配置。您可以选择“手动”并填入 HTTP、HTTPS 或 SOCKS 代理的详细信息。
+
+-----
+
+**请注意：**
+
+  * **SOCKS 代理**：如果您使用的是 SOCKS 代理（例如 SOCKS5），需要将变量设置为 `export all_proxy="socks5://代理服务器地址:端口"`。
+  * **确认**：配置完成后，您可以使用 `env | grep -i proxy` 命令来检查环境变量是否已正确设置。
